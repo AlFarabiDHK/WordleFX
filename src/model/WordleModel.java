@@ -25,9 +25,18 @@ import utilities.INDEX_RESULT;
 public class WordleModel {
 	
 	private static final String FILENAME = "dictionary.txt";
-	private static final int ALPHABETCOUNT = 26;
+	/**
+	 * Allowed number of guessed
+	 */
+	public final int ALLOWEDNUMBEROFGUESSES = 6;
+	/**
+	 * Allowed length of a word
+	 */
 	private static final int LEN = 5;
+	private static final int ALPHABETCOUNT = 26;
+	private Guess[] progress;
 	private String answer;
+	private int curr;
 	private INDEX_RESULT[] guessedCharacters;
 	private ArrayList<String> dictionary = new ArrayList<String>();
 
@@ -56,13 +65,38 @@ public class WordleModel {
 			int randomNumber = rand.nextInt(dictionary.size());
 			this.answer = dictionary.get(randomNumber).toUpperCase();
 			this.answer = this.answer.toUpperCase();
+			this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
+			this.curr = 1;
 
 		}
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
-
+	
+	/**
+	 * Gets the dictionary in an ArrayList
+	 * <p>
+	 * This method returns an array that contains all the words from the dictionary
+	 * @return an ArrayList that contains all the words from the dictionary
+	 */
+	
+	public ArrayList<String> getDict(){
+		return this.dictionary;
+	}
+	
+	/**
+	 * Analyzes the guess and returns it
+	 * <p>
+	 * This method takes the guess word and determines whether this is the correct one. Firstly, it 
+	 * goes through the guessed and compares it with the answer. It instantiates an array of INDEX_RESULT
+	 * that will contain information about the status of each letter in the guess. The program loops through
+	 * and compares the guessed, and sets the enum values of the array according to the status of the letters
+	 * in the guess. 
+	 * @param guess a String, guess word from the user
+	 * @return returns a Guess object that has been modified to match the current guess
+	 */
+	
 	public void makeGuess(int guessNumber, String guess) {
 		INDEX_RESULT[] index = new INDEX_RESULT[LEN];
 		boolean bool = false;
@@ -94,8 +128,21 @@ public class WordleModel {
 				this.guessedCharacters[guess.charAt(i) - 'A'] = index[i];
 		
 		if(guess.equals(this.answer)) bool = true;
-		//Guess g = new Guess(guess, index, bool);
-		//return g;
+		this.progress[this.curr-1] = new Guess(guess, index, bool);
+		this.curr++;
+	}
+	
+	/**
+	 * Gets the number of attempts
+	 * 
+	 * <p>
+	 * THis method gets the number of attempts the player has 
+	 * tried already.
+	 * @return the private field curr
+	 */
+	
+	public int getCurr() {
+		return curr;
 	}
 	
 
@@ -121,8 +168,15 @@ public class WordleModel {
 		return this.guessedCharacters;
 	}
 	
+	/**
+	 * Gets progress
+	 * <p>
+	 * This method returns the progress field
+	 * @return an array of Guess, a field of the class
+	 */
+	
 	public Guess[] getProgress() {
-		// later
+		return this.progress;
 	}
 
 }
