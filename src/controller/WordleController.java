@@ -24,12 +24,13 @@ public class WordleController {
 	/**
 	 * Allowed number of guessed
 	 */
-	public final int ALLOWEDNUMBEROFGUESSES = 6;
+	private final int ALLOWEDNUMBEROFGUESSES = 6;
 	/**
 	 * Allowed length of a word
 	 */
-	public final int LEN = 5;
+	private final int LEN = 5;
 	private Guess[] progress;
+	private int curr;
 	private boolean isGameOverBool;
 	
 	/**
@@ -43,14 +44,43 @@ public class WordleController {
 	public WordleController (WordleModel model) {
 		this.model = model;
 		this.isGameOverBool = false;
+		this.curr = 1;
 		this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
 		for(int i = 0; i < this.ALLOWEDNUMBEROFGUESSES; i++) {
 				progress[i] = null;
 		}
 	} 
 	
+	/**
+	 * Gets all characters
+	 * <p>
+	 * This method returns the allChar() method from the model
+	 * @return an array of Character, the output of model.allChar()
+	 */
+	
+	public Character[] allChar(){
+		return model.allChar();
+	}
+	
+	/**
+	 * Gets the number of attempts
+	 * 
+	 * <p>
+	 * THis method gets the number of attempts the player has 
+	 * tried already.
+	 * @return the private field curr
+	 */
+	
 	public int getCurr() {
-		return model.getCurr();
+		return this.curr;
+	}
+	
+	public int getAllowedNumberOfGuesses() {
+		return ALLOWEDNUMBEROFGUESSES;
+	}
+	
+	public int getLen() {
+		return LEN;
 	}
 	
 	/**
@@ -94,9 +124,11 @@ public class WordleController {
 			throw new OnlyLettersException("Invalid input. Must only contain alphabets");
 		if(!model.getDict().contains(guess))
 			throw new NotInDictionaryException("Invalid input. The word is not in the dictionary.");
-		
+		model.makeGuess(this.curr, guess);
 		if(model.getAnswer().equals(guess) || this.getCurr() == ALLOWEDNUMBEROFGUESSES)
 			this.isGameOverBool = true;
+		
+		this.curr++;
 	}
 	
 	public class OnlyLettersException extends Exception {

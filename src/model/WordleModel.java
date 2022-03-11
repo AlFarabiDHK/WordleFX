@@ -36,7 +36,6 @@ public class WordleModel {
 	private static final int ALPHABETCOUNT = 26;
 	private Guess[] progress;
 	private String answer;
-	private int curr;
 	private INDEX_RESULT[] guessedCharacters;
 	private ArrayList<String> dictionary = new ArrayList<String>();
 
@@ -66,7 +65,6 @@ public class WordleModel {
 			this.answer = dictionary.get(randomNumber).toUpperCase();
 			this.answer = this.answer.toUpperCase();
 			this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
-			this.curr = 1;
 
 		}
 		catch (FileNotFoundException e) {
@@ -94,10 +92,12 @@ public class WordleModel {
 	 * and compares the guessed, and sets the enum values of the array according to the status of the letters
 	 * in the guess. 
 	 * @param guess a String, guess word from the user
+	 * @param guessNumber a number that represents the number of attempts attempted
 	 * @return returns a Guess object that has been modified to match the current guess
 	 */
 	
 	public void makeGuess(int guessNumber, String guess) {
+		
 		INDEX_RESULT[] index = new INDEX_RESULT[LEN];
 		boolean bool = false;
 		guess = guess.toUpperCase();
@@ -128,22 +128,10 @@ public class WordleModel {
 				this.guessedCharacters[guess.charAt(i) - 'A'] = index[i];
 		
 		if(guess.equals(this.answer)) bool = true;
-		this.progress[this.curr-1] = new Guess(guess, index, bool);
-		this.curr++;
+		this.progress[guessNumber-1] = new Guess(guess, index, bool);
 	}
 	
-	/**
-	 * Gets the number of attempts
-	 * 
-	 * <p>
-	 * THis method gets the number of attempts the player has 
-	 * tried already.
-	 * @return the private field curr
-	 */
-	
-	public int getCurr() {
-		return curr;
-	}
+
 	
 
 	/**
@@ -177,6 +165,23 @@ public class WordleModel {
 	
 	public Guess[] getProgress() {
 		return this.progress;
+	}
+	
+	/**
+	 * Gets an array of all characters
+	 * <p>
+	 * This method generated a Character array that has all the upper case English Character
+	 * @return a Character array that has all the upper case English Character
+	 */
+	
+	public Character[] allChar(){
+		Character[] arr = new Character[ALPHABETCOUNT];
+		
+		for(int i = 0; i < ALPHABETCOUNT; i++) {
+			arr[i] = (char) (i + 65); 
+		}
+		return arr;
+		
 	}
 
 }
