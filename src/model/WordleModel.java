@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Observable;
 import java.util.Random;
 import java.util.Scanner;
 import java.io.File;
@@ -22,7 +23,7 @@ import utilities.INDEX_RESULT;
  * @author Muhtasim Al-Farabi, Tyler Conklin
  */
 
-public class WordleModel {
+public class WordleModel extends Observable{
 	
 	private static final String FILENAME = "dictionary.txt";
 	/**
