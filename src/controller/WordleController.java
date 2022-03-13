@@ -32,6 +32,7 @@ public class WordleController {
 	private Guess[] progress;
 	private int curr;
 	private boolean isGameOverBool;
+	private String answer;
 	
 	/**
 	 * Constructor
@@ -45,6 +46,7 @@ public class WordleController {
 		this.model = model;
 		this.isGameOverBool = false;
 		this.curr = 1;
+		this.answer = model.getAnswer();
 		this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
 		for(int i = 0; i < this.ALLOWEDNUMBEROFGUESSES; i++) {
 				progress[i] = null;
@@ -95,16 +97,6 @@ public class WordleController {
 		return this.isGameOverBool;
 	}
 	
-	/**
-	 * Gets the answer
-	 * <p>
-	 * This method gets the answer from the model
-	 * @return a string from the model that is the actual answer word
-	 */
-	
-	public String getAnswer() {
-		return this.model.getAnswer();
-	}
 	
 	/**
 	 * Takes a guess and stores into the progress
@@ -125,9 +117,9 @@ public class WordleController {
 		if(!model.getDict().contains(guess))
 			throw new NotInDictionaryException("Invalid input. The word is not in the dictionary.");
 		model.makeGuess(this.curr, guess);
-		if(model.getAnswer().equals(guess) || this.getCurr() == ALLOWEDNUMBEROFGUESSES)
+		if(this.answer.equals(guess.toUpperCase()) || this.getCurr() == ALLOWEDNUMBEROFGUESSES) {
 			this.isGameOverBool = true;
-		
+		}
 		this.curr++;
 	}
 	

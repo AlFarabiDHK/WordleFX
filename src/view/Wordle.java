@@ -11,18 +11,24 @@ public class Wordle {
 	
     public static void main(String[] args) throws OnlyLettersException, NotInDictionaryException, CorrectLengthException {
     	
-    	boolean playAgain = true;
-		// this loop initiates each game
-    	WordleTextView text = new WordleTextView();
-		while(playAgain){
-    	
-    	text.runText();
-    	System.out.println("Good game! The word was " + text.getAnswer() + ".");
-		System.out.println("Would you like to play again? yes/no");
-		Scanner sc = new Scanner(System.in);
-		String s = sc.next();
-		if(s.equals("no")) break;
-		}
+    	if (args[0].equals("-text")) {
+	    	boolean playAgain = true;
+			// this loop initiates each game
+	    	
+			while(playAgain){
+			WordleTextView text = new WordleTextView();
+	    	text.runText();
+	    	System.out.println("Good game! The word was " + text.getAnswer() + ".");
+			System.out.println("Would you like to play again? yes/no");
+			Scanner sc = new Scanner(System.in);
+			String s = sc.next();
+			if(s.equals("no")) break;
+		
+			}
+    	}
+    	else if(args[0].equals("-gui")) {
+    		// run wordleguiview
+    	}
     }
     
 }
