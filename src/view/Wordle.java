@@ -27,7 +27,7 @@ public class Wordle {
 			}
     	}
     	else if(args[0].equals("-gui")) {
-    		// run wordleguiview
+    		Application.launch(WordleGUIView.class, args[0]);
     	}
     }
     

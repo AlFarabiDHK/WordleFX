@@ -1,6 +1,8 @@
 package view;
 
 import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 public class WordleGUIView extends Application {
@@ -18,7 +20,11 @@ public class WordleGUIView extends Application {
 
 	@Override
 	public void start(Stage stage) {
-
+		BorderPane window = new BorderPane();
+		Scene scene = new Scene(window, SCENE_SIZE, SCENE_SIZE);
+		stage.setTitle("Wordle");
+		stage.setScene(scene);
+		stage.show();
 	}
 
 }
