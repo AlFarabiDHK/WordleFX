@@ -54,6 +54,18 @@ public class WordleController {
 	} 
 	
 	/**
+	 * Gets answer
+	 * <p>
+	 * This method gets the answer from the model
+	 * @return a string that is the actual answer word
+	 */
+	
+	public String getAnswer() {
+		return model.getAnswer();
+	}
+	
+	
+	/**
 	 * Gets all characters
 	 * <p>
 	 * This method returns the allChar() method from the model
