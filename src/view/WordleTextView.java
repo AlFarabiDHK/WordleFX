@@ -1,7 +1,6 @@
 package view;
 
 import java.util.ArrayList;
-import java.util.Observable;
 import java.util.Scanner;
 
 import controller.WordleController;
@@ -11,9 +10,9 @@ import controller.WordleController.OnlyLettersException;
 import model.WordleModel;
 import utilities.Guess;
 import utilities.INDEX_RESULT;
-import java.util.Observer;
 
-public class WordleTextView implements Observer{
+
+public class WordleTextView{
 	
 	WordleModel model;
 	WordleController controller;
@@ -149,11 +148,6 @@ public class WordleTextView implements Observer{
 		}
 	}
 
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-		
-	}
 	
 	
 	

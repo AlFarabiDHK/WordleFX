@@ -43,9 +43,16 @@ public class WordleGUIView extends Application implements Observer{
 	public void start(Stage stage) {
 		model = new WordleModel();
 		controller = new WordleController(model);
+		Character[] guessedChar = controller.allChar();
+		String[] keyboardTop = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
+		String[] keyBoardMid = {"A", "S", "D", "F", "G", "H", "J","K","L"};
+		String[] keyBoardBottom = { "Z","X","C","V","B","N","M"};
 		
-		VBox v = new VBox();
-		Scene scene = new Scene(v, SCENE_SIZE, SCENE_SIZE);
+		
+		
+		
+		VBox root = new VBox();
+		Scene scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
 		stage.setTitle("Wordle");
 		Image icon = new Image("icons8-w-96.png");
 		stage.getIcons().add(icon);
@@ -77,33 +84,19 @@ public class WordleGUIView extends Application implements Observer{
 		});
 
 		/*
-		KeyEvent ke = new KeyEvent(null, null, null, null, false, false, false, false);
-		if (ke.getCode().equals(KeyCode.DELETE) || ke.getCode().equals(KeyCode.BACK_SPACE)) {
-			
-		}
-		
-		else if(ke.getCode().equals(KeyCode.ENTER)) {
-			
-		}
-		
-		else {
-			input = ke.getCode().getName();
-		}
 		
 		
 		GridPane gridTop = new GridPane();
 		GridPane gridBottom = new GridPane();
-		String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
-								"A", "S", "D", "F", "G", "H", "J","K","L",
-								 "Z","X","C","V","B","N","M"
-								};
-		Label label = new Label("yay");
+		
+		
 		gridTop.add(label, 0, 0);
 		
 		scene.setOnKeyPressed(null);
 		
 		*/
-		
+		Label label = new Label("yay");
+		root.getChildren().add(label);
 		
 		stage.setScene(scene);
 		stage.show();
