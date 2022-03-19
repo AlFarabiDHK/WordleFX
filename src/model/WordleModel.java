@@ -58,7 +58,7 @@ public class WordleModel extends Observable{
 			Scanner sc = new Scanner(new File(FILENAME));
 			while(sc.hasNext()){
 				String temp = sc.next();
-				this.dictionary.add(temp);
+				this.dictionary.add(temp.toUpperCase());
 			}
 			sc.close();
 			Random rand = new Random();

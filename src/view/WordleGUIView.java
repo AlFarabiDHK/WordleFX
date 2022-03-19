@@ -6,6 +6,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 import controller.WordleController;
+import controller.WordleController.CorrectLengthException;
+import controller.WordleController.NotInDictionaryException;
+import controller.WordleController.OnlyLettersException;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -47,8 +50,18 @@ public class WordleGUIView extends Application implements Observer{
 		String[] keyboardTop = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
 		String[] keyBoardMid = {"A", "S", "D", "F", "G", "H", "J","K","L"};
 		String[] keyBoardBottom = { "Z","X","C","V","B","N","M"};
+		int len = controller.getLen();
+		int attempt = controller.getAllowedNumberOfGuesses();
+		//add labels 
 		
+		Label[][] arrayOfLabels = new Label[attempt][len];
 		
+		for(int i = 0; i < attempt; i++) {
+			for(int j = 0; j < len; j++) {
+				arrayOfLabels[i][j] = new Label();
+				
+			}
+		}
 		
 		
 		VBox root = new VBox();
@@ -56,13 +69,15 @@ public class WordleGUIView extends Application implements Observer{
 		stage.setTitle("Wordle");
 		Image icon = new Image("icons8-w-96.png");
 		stage.getIcons().add(icon);
-		
+		String guess;
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			ArrayList<String> stack = new ArrayList<String>();
-
+			
+			String guess;
+			
 			@Override
 			public void handle(KeyEvent ke) {
-				//System.out.println(ke.getCode());
+				
 				if (ke.getCode().equals(KeyCode.DELETE) || ke.getCode().equals(KeyCode.BACK_SPACE)) {
 					if(!stack.isEmpty())
 						stack.remove(stack.size()-1);
@@ -70,6 +85,27 @@ public class WordleGUIView extends Application implements Observer{
 				
 				else if(ke.getCode().equals(KeyCode.ENTER)) {
 					
+					guess = join(stack);
+					System.out.println(guess);
+					try {
+						controller.makeGuess(guess);
+					}
+					catch (OnlyLettersException e) {
+						String alertString = e.toString();
+						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+						alert.showAndWait();
+					}
+					catch(NotInDictionaryException e) {
+						String alertString = e.toString();
+						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+						alert.showAndWait();
+					}
+					catch(CorrectLengthException e) {
+						String alertString = e.toString();
+						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+						alert.showAndWait();
+						
+					}
 				}
 				
 				else {
@@ -78,10 +114,16 @@ public class WordleGUIView extends Application implements Observer{
 				
 				System.out.println(stack);
 				
+				
 			}
 			
 			
+			
 		});
+		
+		
+		
+		
 
 		/*
 		
@@ -95,7 +137,8 @@ public class WordleGUIView extends Application implements Observer{
 		scene.setOnKeyPressed(null);
 		
 		*/
-		Label label = new Label("yay");
+		Label label = new Label();
+		label.setText(guess);
 		root.getChildren().add(label);
 		
 		stage.setScene(scene);
@@ -110,6 +153,14 @@ public class WordleGUIView extends Application implements Observer{
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private String join(ArrayList<String> s) {
+		String result = "";
+		for (String elem:s) {
+			result += elem;
+		}
+		return result;
 	}
 
 }

@@ -32,7 +32,7 @@ public class WordleTextView{
 			while (!controller.isGameOver()) {
 				Scanner sc = new Scanner(System.in);
 				System.out.print("Enter a guess: ");
-				String guess = sc.next();
+				String guess = sc.next().toUpperCase();
 				try {
 					controller.makeGuess(guess);
 				}
