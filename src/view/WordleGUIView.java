@@ -19,9 +19,12 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.WordleModel;
@@ -41,27 +44,21 @@ public class WordleGUIView extends Application implements Observer{
 	
 	private WordleModel model;
 	private WordleController controller;
-	
+	private String[] keyboardTop = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
+	private String[] keyBoardMid = {"A", "S", "D", "F", "G", "H", "J","K","L"};
+	private String[] keyBoardBottom = { "Z","X","C","V","B","N","M"};
+	private static Background background;
 	@Override
 	public void start(Stage stage) {
 		model = new WordleModel();
 		controller = new WordleController(model);
 		Character[] guessedChar = controller.allChar();
-		String[] keyboardTop = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
-		String[] keyBoardMid = {"A", "S", "D", "F", "G", "H", "J","K","L"};
-		String[] keyBoardBottom = { "Z","X","C","V","B","N","M"};
+		
 		int len = controller.getLen();
 		int attempt = controller.getAllowedNumberOfGuesses();
 		//add labels 
 		
-		Label[][] arrayOfLabels = new Label[attempt][len];
 		
-		for(int i = 0; i < attempt; i++) {
-			for(int j = 0; j < len; j++) {
-				arrayOfLabels[i][j] = new Label();
-				
-			}
-		}
 		
 		
 		VBox root = new VBox();
@@ -69,6 +66,18 @@ public class WordleGUIView extends Application implements Observer{
 		stage.setTitle("Wordle");
 		Image icon = new Image("icons8-w-96.png");
 		stage.getIcons().add(icon);
+		Label[][] arrayOfLabels = new Label[attempt][len];
+		
+		for(int i = 0; i < attempt; i++) {
+			for(int j = 0; j < len; j++) {
+				arrayOfLabels[i][j] = new Label("Test");
+				arrayOfLabels[i][j].setMaxHeight(LETTER_SQUARE_SIZE);
+				arrayOfLabels[i][j].setMaxWidth(LETTER_SQUARE_SIZE);
+				arrayOfLabels[i][j].setTextFill(Color.BLACK);
+				arrayOfLabels[i][j].setLineSpacing(GRID_GAP);
+				root.getChildren().add(arrayOfLabels[i][j]);
+			}
+		}
 		String guess;
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			ArrayList<String> stack = new ArrayList<String>();
@@ -134,24 +143,20 @@ public class WordleGUIView extends Application implements Observer{
 		
 		gridTop.add(label, 0, 0);
 		
-		scene.setOnKeyPressed(null);
-		
 		*/
-		Label label = new Label();
-		label.setText(guess);
-		root.getChildren().add(label);
 		
 		stage.setScene(scene);
 		stage.show();
 		
-		//String alertString = "Good game! The word was " + controller.getAnswer() + ".";
-		//Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
-		//alert.showAndWait();
+		
 	}
 
 	@Override
 	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
+		
+		//String alertString = "Good game! The word was " + controller.getAnswer() + ".";
+		//Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+		//alert.showAndWait();
 		
 	}
 	

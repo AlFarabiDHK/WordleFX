@@ -130,6 +130,8 @@ public class WordleModel extends Observable{
 		
 		if(guess.equals(this.answer)) bool = true;
 		this.progress[guessNumber-1] = new Guess(guess, index, bool);
+		setChanged();
+		notifyObservers();
 	}
 	
 
