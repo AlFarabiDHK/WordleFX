@@ -22,8 +22,10 @@ import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -39,52 +41,79 @@ public class WordleGUIView extends Application implements Observer{
 
 	/* Constants for grid of letters */
 	private static final int GRID_GAP = 10;
+	private static final int KEY_GRID_GAP = 10;
 
 	/* Constants for letters in grid */
 	private static final int LETTER_FONT_SIZE = 75;
+	private static final int KEYBOARD_FONT_SIZE = 20;
 	private static final int LETTER_SQUARE_SIZE = 90;
+	private static final int KEYBOARD_SQUARE_SIZE = 40;
 	private static final int LETTER_BORDER_WIDTH = 2;
+	private static final int KEYBOARD_BORDER_WIDTH = 1;
 	private static final int LETTER_BORDER_RADIUS = 7;
-	
+	private static final int KEYBOARD_BORDER_RADIUS = 4;
+	private static final int ALPHABET_COUNT = 26;
 	private WordleModel model;
 	private WordleController controller;
-	private String[] keyboardTop = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"};
-	private String[] keyBoardMid = {"A", "S", "D", "F", "G", "H", "J","K","L"};
-	private String[] keyBoardBottom = { "Z","X","C","V","B","N","M"};
-	private static Background background;
+	private String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+										"A", "S", "D", "F", "G", "H", "J","K","L",
+											"Z","X","C","V","B","N","M"};
 	private VBox root;
 	private Scene scene;
 	private Image icon;
+	private Background defaultBackground;
+	private Background keyboardBackground;
 	private static Label[][] arrayOfLabels;
+	private static Label[] arrayOfKeyBoardLetters;
 	private GridPane gridTop;
+	private GridPane gridBottom;
 	private static int len;
 	private static int attempt;
 	private static String labelStyleDefault;
+	private static String keyboardStyleDefault;
 	
 	@Override
 	public void start(Stage stage) {
 		model = new WordleModel();
 		controller = new WordleController(model);
 		Character[] guessedChar = controller.allChar();
-		
+		defaultBackground = new Background(
+				new BackgroundFill(Color.BLACK, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
+		keyboardBackground = new Background(
+				new BackgroundFill(Color.GREY, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
 		len = controller.getLen();
 		attempt = controller.getAllowedNumberOfGuesses();
 		labelStyleDefault = "-fx-border-color: black;"
 				+ "-fx-border-width: "
 				+ Integer.toString(LETTER_BORDER_WIDTH)
 				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: white;"
 				+ "-fx-border-radius:" + Integer.toString(LETTER_BORDER_RADIUS)
 				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
 				+ "-fx-margin: 10px;";
 		//add labels 
 		
+		keyboardStyleDefault = "-fx-border-color: black;"
+				+ "-fx-border-width: "
+				+ Integer.toString(KEYBOARD_BORDER_WIDTH)
+				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: grey;"
+				+ "-fx-border-radius:" + Integer.toString(KEYBOARD_BORDER_RADIUS)
+				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
+				+ "-fx-margin: 30px;";
+		
 		root = new VBox();
+		root.setBackground(defaultBackground);
 		scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
 		stage.setTitle("Wordle");
 		icon = new Image("icons8-w-96.png");
 		stage.getIcons().add(icon);
 		arrayOfLabels = new Label[attempt][len];
 		gridTop = new GridPane();
+		gridTop.setAlignment(Pos.CENTER);
+		gridTop.setHgap(GRID_GAP); 
+		gridTop.setVgap(GRID_GAP); 
+		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
 		root.setAlignment(Pos.CENTER);
 		root.getChildren().add(gridTop);
 		
@@ -93,18 +122,49 @@ public class WordleGUIView extends Application implements Observer{
 				arrayOfLabels[i][j] = new Label();
 				arrayOfLabels[i][j].setMinHeight(LETTER_SQUARE_SIZE);
 				arrayOfLabels[i][j].setMinWidth(LETTER_SQUARE_SIZE);
-				arrayOfLabels[i][j].setTextFill(Color.BLACK);
+				arrayOfLabels[i][j].setTextFill(Color.WHITE);
 				arrayOfLabels[i][j].setLineSpacing(GRID_GAP);
 				arrayOfLabels[i][j].setFont(Font.font("Arial", LETTER_FONT_SIZE));
 				arrayOfLabels[i][j].setStyle(labelStyleDefault);
 				arrayOfLabels[i][j].setAlignment(Pos.CENTER);
-				//arrayOfLabels[i][j]
 				gridTop.add(arrayOfLabels[i][j], j, i);
 			}
 		}
+		
+		gridBottom = new GridPane();
+		gridBottom.setAlignment(Pos.CENTER);
+		gridBottom.setHgap(KEY_GRID_GAP); 
+		gridBottom.setVgap(KEY_GRID_GAP); 
+		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
+		root.getChildren().add(gridBottom);
+		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
+		int y_pos = 0;
+		int x_pos = 0;
+		for(int i = 0; i < ALPHABET_COUNT; i++) {
+			arrayOfKeyBoardLetters[i] = new Label(keyboard[i]);
+			
+			if (i == 10) { 
+				y_pos++;
+				x_pos = 0;
+				}
+			if(i == 19) {
+				y_pos++;
+				x_pos = 0;
+			}
+			arrayOfKeyBoardLetters[i].setMinHeight(KEYBOARD_SQUARE_SIZE);
+			arrayOfKeyBoardLetters[i].setMinWidth(KEYBOARD_SQUARE_SIZE);
+			arrayOfKeyBoardLetters[i].setTextFill(Color.WHITE);
+			arrayOfKeyBoardLetters[i].setLineSpacing(GRID_GAP);
+			arrayOfKeyBoardLetters[i].setFont(Font.font("Arial", KEYBOARD_FONT_SIZE));
+			arrayOfKeyBoardLetters[i].setStyle(keyboardStyleDefault);
+			arrayOfKeyBoardLetters[i].setAlignment(Pos.CENTER);
+			arrayOfKeyBoardLetters[i].setBackground(keyboardBackground);
+			gridBottom.add(arrayOfKeyBoardLetters[i], x_pos, y_pos);
+			x_pos++;
+		}
+		
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			ArrayList<String> stack = new ArrayList<String>();
-			
 			String guess;
 			int i = 0;
 			int j = 0;
@@ -155,7 +215,6 @@ public class WordleGUIView extends Application implements Observer{
 					if (j < WordleGUIView.len) {
 						String tempLetter = ke.getCode().getName();
 						stack.add(tempLetter);
-					
 						WordleGUIView.arrayOfLabels[i][j].setText(tempLetter);
 						j++;
 					}
@@ -163,19 +222,12 @@ public class WordleGUIView extends Application implements Observer{
 				}
 				
 				System.out.println(stack);
-				
-				
 			}
-			
-			
 			
 		});
 		
-		
 		stage.setScene(scene);
 		stage.show();
-		
-		
 	}
 
 	@Override
