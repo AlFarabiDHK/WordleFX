@@ -45,19 +45,20 @@ public class WordleGUIView extends Application implements Observer{
 
 	/* Constants for letters in grid */
 	private static final int LETTER_FONT_SIZE = 75;
-	private static final int KEYBOARD_FONT_SIZE = 20;
+	private static final int KEYBOARD_FONT_SIZE = 15;
 	private static final int LETTER_SQUARE_SIZE = 90;
 	private static final int KEYBOARD_SQUARE_SIZE = 40;
 	private static final int LETTER_BORDER_WIDTH = 2;
 	private static final int KEYBOARD_BORDER_WIDTH = 1;
-	private static final int LETTER_BORDER_RADIUS = 7;
-	private static final int KEYBOARD_BORDER_RADIUS = 4;
+	private static final int LETTER_BORDER_RADIUS = 4;
+	private static final int KEYBOARD_BORDER_RADIUS = 2;
 	private static final int ALPHABET_COUNT = 26;
 	private WordleModel model;
 	private WordleController controller;
 	private String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
 										"A", "S", "D", "F", "G", "H", "J","K","L",
 											"Z","X","C","V","B","N","M"};
+	private Character[] guessedChar;
 	private VBox root;
 	private Scene scene;
 	private Image icon;
@@ -74,95 +75,9 @@ public class WordleGUIView extends Application implements Observer{
 	
 	@Override
 	public void start(Stage stage) {
-		model = new WordleModel();
-		controller = new WordleController(model);
-		Character[] guessedChar = controller.allChar();
-		defaultBackground = new Background(
-				new BackgroundFill(Color.BLACK, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
-		keyboardBackground = new Background(
-				new BackgroundFill(Color.GREY, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
-		len = controller.getLen();
-		attempt = controller.getAllowedNumberOfGuesses();
-		labelStyleDefault = "-fx-border-color: black;"
-				+ "-fx-border-width: "
-				+ Integer.toString(LETTER_BORDER_WIDTH)
-				+ "; -fx-border-style: solid;"
-				+ "-fx-border-color: white;"
-				+ "-fx-border-radius:" + Integer.toString(LETTER_BORDER_RADIUS)
-				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
-				+ "-fx-margin: 10px;";
-		//add labels 
-		
-		keyboardStyleDefault = "-fx-border-color: black;"
-				+ "-fx-border-width: "
-				+ Integer.toString(KEYBOARD_BORDER_WIDTH)
-				+ "; -fx-border-style: solid;"
-				+ "-fx-border-color: grey;"
-				+ "-fx-border-radius:" + Integer.toString(KEYBOARD_BORDER_RADIUS)
-				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
-				+ "-fx-margin: 30px;";
-		
-		root = new VBox();
-		root.setBackground(defaultBackground);
-		scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
-		stage.setTitle("Wordle");
-		icon = new Image("icons8-w-96.png");
-		stage.getIcons().add(icon);
-		arrayOfLabels = new Label[attempt][len];
-		gridTop = new GridPane();
-		gridTop.setAlignment(Pos.CENTER);
-		gridTop.setHgap(GRID_GAP); 
-		gridTop.setVgap(GRID_GAP); 
-		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
-		root.setAlignment(Pos.CENTER);
-		root.getChildren().add(gridTop);
-		
-		for(int i = 0; i < attempt; i++) {
-			for(int j = 0; j < len; j++) {
-				arrayOfLabels[i][j] = new Label();
-				arrayOfLabels[i][j].setMinHeight(LETTER_SQUARE_SIZE);
-				arrayOfLabels[i][j].setMinWidth(LETTER_SQUARE_SIZE);
-				arrayOfLabels[i][j].setTextFill(Color.WHITE);
-				arrayOfLabels[i][j].setLineSpacing(GRID_GAP);
-				arrayOfLabels[i][j].setFont(Font.font("Arial", LETTER_FONT_SIZE));
-				arrayOfLabels[i][j].setStyle(labelStyleDefault);
-				arrayOfLabels[i][j].setAlignment(Pos.CENTER);
-				gridTop.add(arrayOfLabels[i][j], j, i);
-			}
-		}
-		
-		gridBottom = new GridPane();
-		gridBottom.setAlignment(Pos.CENTER);
-		gridBottom.setHgap(KEY_GRID_GAP); 
-		gridBottom.setVgap(KEY_GRID_GAP); 
-		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
-		root.getChildren().add(gridBottom);
-		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
-		int y_pos = 0;
-		int x_pos = 0;
-		for(int i = 0; i < ALPHABET_COUNT; i++) {
-			arrayOfKeyBoardLetters[i] = new Label(keyboard[i]);
-			
-			if (i == 10) { 
-				y_pos++;
-				x_pos = 0;
-				}
-			if(i == 19) {
-				y_pos++;
-				x_pos = 0;
-			}
-			arrayOfKeyBoardLetters[i].setMinHeight(KEYBOARD_SQUARE_SIZE);
-			arrayOfKeyBoardLetters[i].setMinWidth(KEYBOARD_SQUARE_SIZE);
-			arrayOfKeyBoardLetters[i].setTextFill(Color.WHITE);
-			arrayOfKeyBoardLetters[i].setLineSpacing(GRID_GAP);
-			arrayOfKeyBoardLetters[i].setFont(Font.font("Arial", KEYBOARD_FONT_SIZE));
-			arrayOfKeyBoardLetters[i].setStyle(keyboardStyleDefault);
-			arrayOfKeyBoardLetters[i].setAlignment(Pos.CENTER);
-			arrayOfKeyBoardLetters[i].setBackground(keyboardBackground);
-			gridBottom.add(arrayOfKeyBoardLetters[i], x_pos, y_pos);
-			x_pos++;
-		}
-		
+		this.fieldInitialization();
+		this.setters(stage);
+		this.populateArrays();
 		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
 			ArrayList<String> stack = new ArrayList<String>();
 			String guess;
@@ -199,7 +114,6 @@ public class WordleGUIView extends Application implements Observer{
 					catch(NotInDictionaryException e) {
 						String alertString = e.toString();
 						
-						
 						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
 						alert.showAndWait();
 					}
@@ -233,10 +147,113 @@ public class WordleGUIView extends Application implements Observer{
 	@Override
 	public void update(Observable o, Object arg) {
 		
+		
+		
 		//String alertString = "Good game! The word was " + controller.getAnswer() + ".";
 		//Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
 		//alert.showAndWait();
 		
+	}
+	private void setters(Stage stage)
+	{
+		root.setBackground(defaultBackground);
+		
+		stage.setTitle("Wordle");
+		icon = new Image("icons8-w-96.png");
+		stage.getIcons().add(icon);
+		
+		
+		gridTop.setAlignment(Pos.CENTER);
+		gridTop.setHgap(GRID_GAP); 
+		gridTop.setVgap(GRID_GAP); 
+		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
+		root.setAlignment(Pos.CENTER);
+		root.getChildren().add(gridTop);
+		gridBottom.setAlignment(Pos.CENTER);
+		gridBottom.setHgap(KEY_GRID_GAP); 
+		gridBottom.setVgap(KEY_GRID_GAP); 
+		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
+		root.getChildren().add(gridBottom);
+		
+	}	
+	private void populateArrays() {
+
+		for(int i = 0; i < attempt; i++) {
+			for(int j = 0; j < len; j++) {
+				arrayOfLabels[i][j] = new Label();
+				arrayOfLabels[i][j].setMinHeight(LETTER_SQUARE_SIZE);
+				arrayOfLabels[i][j].setMinWidth(LETTER_SQUARE_SIZE);
+				arrayOfLabels[i][j].setTextFill(Color.WHITE);
+				arrayOfLabels[i][j].setLineSpacing(GRID_GAP);
+				arrayOfLabels[i][j].setFont(Font.font("Arial", LETTER_FONT_SIZE));
+				arrayOfLabels[i][j].setStyle(labelStyleDefault);
+				arrayOfLabels[i][j].setAlignment(Pos.CENTER);
+				gridTop.add(arrayOfLabels[i][j], j, i);
+			}
+		}
+
+		int y_pos = 0;
+		int x_pos = 0;
+		for(int i = 0; i < ALPHABET_COUNT; i++) {
+			arrayOfKeyBoardLetters[i] = new Label(keyboard[i]);
+			
+			if (i == 10) { 
+				y_pos++;
+				x_pos = 0;
+				}
+			if(i == 19) {
+				y_pos++;
+				x_pos = 0;
+			}
+			arrayOfKeyBoardLetters[i].setMinHeight(KEYBOARD_SQUARE_SIZE);
+			arrayOfKeyBoardLetters[i].setMinWidth(KEYBOARD_SQUARE_SIZE);
+			arrayOfKeyBoardLetters[i].setTextFill(Color.WHITE);
+			arrayOfKeyBoardLetters[i].setLineSpacing(GRID_GAP);
+			arrayOfKeyBoardLetters[i].setFont(Font.font("Arial", KEYBOARD_FONT_SIZE));
+			arrayOfKeyBoardLetters[i].setStyle(keyboardStyleDefault);
+			arrayOfKeyBoardLetters[i].setAlignment(Pos.CENTER);
+			arrayOfKeyBoardLetters[i].setBackground(keyboardBackground);
+			gridBottom.add(arrayOfKeyBoardLetters[i], x_pos, y_pos);
+			x_pos++;
+		}
+		
+	}
+	
+	private void fieldInitialization() {
+		model = new WordleModel();
+		controller = new WordleController(model);
+		guessedChar = controller.allChar();
+		defaultBackground = new Background(
+				new BackgroundFill(Color.BLACK, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
+		keyboardBackground = new Background(
+				new BackgroundFill(Color.web("#565758") , new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
+		len = controller.getLen();
+		attempt = controller.getAllowedNumberOfGuesses();
+		labelStyleDefault = "-fx-border-color: black;"
+				+ "-fx-border-width: "
+				+ Integer.toString(LETTER_BORDER_WIDTH)
+				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: white;"
+				+ "-fx-border-radius:" + Integer.toString(LETTER_BORDER_RADIUS)
+				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
+				+ "-fx-margin: 10px;";
+		
+		keyboardStyleDefault = "-fx-border-color: black;"
+				+ "-fx-border-width: "
+				+ Integer.toString(KEYBOARD_BORDER_WIDTH)
+				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: grey;"
+				+ "-fx-border-radius:" + Integer.toString(KEYBOARD_BORDER_RADIUS)
+				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
+				+ "-fx-margin: 30px;"
+				+ "-fx-font-weight: bolder;";
+		
+		root = new VBox();
+		scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
+		gridTop = new GridPane();
+		arrayOfLabels = new Label[attempt][len];
+		gridBottom = new GridPane();
+		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
 	}
 	
 	private String join(ArrayList<String> s) {
