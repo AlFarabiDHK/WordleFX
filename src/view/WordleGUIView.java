@@ -33,6 +33,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.WordleModel;
+import utilities.Guess;
+import utilities.INDEX_RESULT;
 
 public class WordleGUIView extends Application implements Observer{
 
@@ -59,11 +61,19 @@ public class WordleGUIView extends Application implements Observer{
 										"A", "S", "D", "F", "G", "H", "J","K","L",
 											"Z","X","C","V","B","N","M"};
 	private Character[] guessedChar;
+	private Guess[] progress;
+	private INDEX_RESULT[] guessedIndexResult;
 	private VBox root;
 	private Scene scene;
 	private Image icon;
 	private Background defaultBackground;
 	private Background keyboardBackground;
+	private Background greenBackground;
+	private Background yellowBackground;
+	private Background greenBackgroundBig;
+	private Background yellowBackgroundBig;
+	private Background darkGreyBackground;
+	private Background afterEnterBackground;
 	private static Label[][] arrayOfLabels;
 	private static Label[] arrayOfKeyBoardLetters;
 	private GridPane gridTop;
@@ -78,104 +88,222 @@ public class WordleGUIView extends Application implements Observer{
 		this.fieldInitialization();
 		this.setters(stage);
 		this.populateArrays();
-		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
-			ArrayList<String> stack = new ArrayList<String>();
-			String guess;
-			int i = 0;
-			int j = 0;
-			
-			@Override
-			public void handle(KeyEvent ke) {
-				
-				if (ke.getCode().equals(KeyCode.DELETE) || ke.getCode().equals(KeyCode.BACK_SPACE)) {
-					if(!stack.isEmpty()) {
-						stack.remove(stack.size()-1);
-						j--;
-						WordleGUIView.arrayOfLabels[i][j].setText("");
-						
-					}
-				}
-				
-				else if(ke.getCode().equals(KeyCode.ENTER)) {
-					
-					guess = join(stack);
-					System.out.println(guess);
-					try {
-						controller.makeGuess(guess);
-						stack.clear();
-						j = 0;
-						i++;
-					}
-					catch (OnlyLettersException e) {
-						String alertString = e.toString();
-						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
-						alert.showAndWait();
-					}
-					catch(NotInDictionaryException e) {
-						String alertString = e.toString();
-						
-						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
-						alert.showAndWait();
-					}
-					catch(CorrectLengthException e) {
-						String alertString = e.toString();
-						Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
-						alert.showAndWait();
-						
-					}
-				}
-				
-				else {
-					if (j < WordleGUIView.len) {
-						String tempLetter = ke.getCode().getName();
-						stack.add(tempLetter);
-						WordleGUIView.arrayOfLabels[i][j].setText(tempLetter);
-						j++;
-					}
-					
-				}
-				
-				System.out.println(stack);
-			}
-			
-		});
+		EventHandler<KeyEvent> keyboardInput = new KeyboardInputHandler();
+		scene.setOnKeyPressed(keyboardInput);
 		
 		stage.setScene(scene);
 		stage.show();
 	}
 
+	private class KeyboardInputHandler implements EventHandler<KeyEvent>{
+		
+		ArrayList<String> stack = new ArrayList<String>();
+		String guess;
+		int i = 0;
+		int j = 0;
+		
+		@Override
+		public void handle(KeyEvent ke) {
+			
+			if (ke.getCode().equals(KeyCode.DELETE) || ke.getCode().equals(KeyCode.BACK_SPACE)) {
+				if(!stack.isEmpty()) {
+					stack.remove(stack.size()-1);
+					j--;
+					WordleGUIView.arrayOfLabels[i][j].setText("");
+					
+				}
+			}
+			
+			else if(ke.getCode().equals(KeyCode.ENTER)) {
+				
+				guess = join(stack);
+				try {
+					controller.makeGuess(guess);
+					stack.clear();
+					j = 0;
+					i++;
+				}
+				catch (OnlyLettersException e) {
+					String alertString = e.toString();
+					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					alert.showAndWait();
+				}
+				catch(NotInDictionaryException e) {
+					String alertString = e.toString();
+					
+					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					alert.showAndWait();
+				}
+				catch(CorrectLengthException e) {
+					String alertString = e.toString();
+					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					alert.showAndWait();
+					
+				}
+			}
+			
+			else {
+				if (j < WordleGUIView.len) {
+					String tempLetter = ke.getCode().getName();
+					stack.add(tempLetter);
+					WordleGUIView.arrayOfLabels[i][j].setText(tempLetter);
+					j++;
+				}
+				
+			}
+		}
+		
+		
+	}
 	@Override
 	public void update(Observable o, Object arg) {
-		
-		
-		
+		guessedChar = controller.allChar();
+		progress = model.getProgress();
+		guessedIndexResult = model.getGuessedCharacters();
+		ArrayList<Character> unguessed = new ArrayList<Character>();
+		ArrayList<Character> incorrect = new ArrayList<Character>();
+		ArrayList<Character> correct = new ArrayList<Character>();
+		ArrayList<Character> correctWrong = new ArrayList<Character>();
+		this.toStringProgress(progress, controller);
+		this.colorizeChar(guessedChar, guessedIndexResult,unguessed,
+				incorrect, correct, correctWrong);
 		//String alertString = "Good game! The word was " + controller.getAnswer() + ".";
 		//Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
 		//alert.showAndWait();
 		
 	}
-	private void setters(Stage stage)
-	{
-		root.setBackground(defaultBackground);
+	
+	private int search(Character target) {
+		for(int i = 0; i < keyboard.length; i++) {
+			if(keyboard[i].equals(Character.toString(target))) {
+				return i;
+			}
+		}
 		
-		stage.setTitle("Wordle");
-		icon = new Image("icons8-w-96.png");
-		stage.getIcons().add(icon);
+		return -1;
+	}
+	
+	public void colorizeChar(Character[] guessedChar, INDEX_RESULT[] guessedIndexResult, ArrayList<Character> unguessed,
+			ArrayList<Character> incorrect, ArrayList<Character> correct, ArrayList<Character> correctWrong) {
 		
+		for(int i = 0; i < guessedIndexResult.length; i++) {
+			Character temp = guessedChar[i];
+			int index = search(temp);
+			if(guessedIndexResult[i] == null)
+				unguessed.add(guessedChar[i]);
+			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.CORRECT)==0) {
+				correct.add(guessedChar[i]);
+				
+				arrayOfKeyBoardLetters[index].setBackground(greenBackground);
+			}
+			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.CORRECT_WRONG_INDEX)==0) {
+				correctWrong.add(guessedChar[i]);
+				arrayOfKeyBoardLetters[index].setBackground(yellowBackground);
+			}
+			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.INCORRECT)==0) {
+				incorrect.add(guessedChar[i]);
+				arrayOfKeyBoardLetters[index].setBackground(darkGreyBackground);
+			}
+			
+		}
 		
-		gridTop.setAlignment(Pos.CENTER);
-		gridTop.setHgap(GRID_GAP); 
-		gridTop.setVgap(GRID_GAP); 
-		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
-		root.setAlignment(Pos.CENTER);
-		root.getChildren().add(gridTop);
-		gridBottom.setAlignment(Pos.CENTER);
-		gridBottom.setHgap(KEY_GRID_GAP); 
-		gridBottom.setVgap(KEY_GRID_GAP); 
-		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
-		root.getChildren().add(gridBottom);
+		if(unguessed.size() != 0) {
+			System.out.println("Unguessed " + unguessed);
+		}
+		if(incorrect.size() != 0)
+			System.out.println(INDEX_RESULT.INCORRECT.getDescription() + " " + incorrect);
+		if(correct.size() != 0)
+			System.out.println(INDEX_RESULT.CORRECT.getDescription() + " " + correct);
+		if(correctWrong.size() != 0)
+			System.out.println(INDEX_RESULT.CORRECT_WRONG_INDEX.getDescription() + " " + correctWrong);
+		System.out.println();
+	}
+	
+	public void toStringProgress(Guess[] progress, WordleController controller) {
+		for(int i = 0; i < attempt; i++) {
+			if(progress[i] != null) 
+			{
+				INDEX_RESULT[] index = progress[i].getIndices();
+				String guess = progress[i].getGuess();
+				
+				for(int j = 0; j < len; j++) {
+					if(index[j].compareTo(INDEX_RESULT.CORRECT) == 0) {
+						String s = Character.toUpperCase(guess.charAt(j)) + " ";
+						System.out.print(s);
+						arrayOfLabels[i][j].setBackground(greenBackgroundBig);
+					}
+					else if (index[j].compareTo(INDEX_RESULT.CORRECT_WRONG_INDEX) == 0) {
+						String s = Character.toLowerCase(guess.charAt(j)) + " ";
+						System.out.print(s);
+						arrayOfLabels[i][j].setBackground(yellowBackgroundBig);
+					}
+					else { 
+						System.out.print("_ ");
+						arrayOfLabels[i][j].setBackground(afterEnterBackground);
+					}
+						
+				}
+				System.out.println();
+			}
+			else System.out.println("_ _ _ _ _");
+		}
+	}
 		
-	}	
+	
+	
+	private void fieldInitialization() {
+		model = new WordleModel();
+		model.setAnswer("MAYBE");
+		model.addObserver(this);
+		controller = new WordleController(model);
+		CornerRadii letterCorner = new CornerRadii(LETTER_BORDER_RADIUS);
+		CornerRadii keyCorner = new CornerRadii(KEYBOARD_BORDER_RADIUS);
+		Insets inset = Insets.EMPTY;
+		defaultBackground = new Background(
+				new BackgroundFill(Color.BLACK, letterCorner, inset));
+		afterEnterBackground = new Background(
+				new BackgroundFill(Color.web("#3a3a3c"), letterCorner, inset));
+		greenBackground = new Background(
+				new BackgroundFill(Color.web("#538d4e"), keyCorner, inset));
+		yellowBackground = new Background(
+				new BackgroundFill(Color.web("#b59f3b"), keyCorner, inset));
+		keyboardBackground = new Background(
+				new BackgroundFill(Color.web("#818384") , keyCorner, inset));
+		darkGreyBackground  = new Background(
+				new BackgroundFill(Color.web("#3a3a3c") , keyCorner, inset));
+		greenBackgroundBig = new Background(
+				new BackgroundFill(Color.web("#538d4e"), letterCorner, inset));
+		yellowBackgroundBig = new Background(
+				new BackgroundFill(Color.web("#b59f3b"), letterCorner, inset));
+		len = controller.getLen();
+		attempt = controller.getAllowedNumberOfGuesses();
+		labelStyleDefault = "-fx-border-color: black;"
+				+ "-fx-border-width: "
+				+ Integer.toString(LETTER_BORDER_WIDTH)
+				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: white;"
+				+ "-fx-border-radius:" + Integer.toString(LETTER_BORDER_RADIUS)
+				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
+				+ "-fx-margin: 10px;";
+		
+		keyboardStyleDefault = "-fx-border-color: black;"
+				+ "-fx-border-width: "
+				+ Integer.toString(KEYBOARD_BORDER_WIDTH)
+				+ "; -fx-border-style: solid;"
+				+ "-fx-border-color: grey;"
+				+ "-fx-border-radius:" + Integer.toString(KEYBOARD_BORDER_RADIUS)
+				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
+				+ "-fx-margin: 30px;"
+				+ "-fx-font-weight: bolder;";
+		
+		root = new VBox();
+		scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
+		gridTop = new GridPane();
+		arrayOfLabels = new Label[attempt][len];
+		gridBottom = new GridPane();
+		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
+	}
+	
 	private void populateArrays() {
 
 		for(int i = 0; i < attempt; i++) {
@@ -219,41 +347,27 @@ public class WordleGUIView extends Application implements Observer{
 		
 	}
 	
-	private void fieldInitialization() {
-		model = new WordleModel();
-		controller = new WordleController(model);
-		guessedChar = controller.allChar();
-		defaultBackground = new Background(
-				new BackgroundFill(Color.BLACK, new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
-		keyboardBackground = new Background(
-				new BackgroundFill(Color.web("#565758") , new CornerRadii(LETTER_BORDER_RADIUS), Insets.EMPTY));
-		len = controller.getLen();
-		attempt = controller.getAllowedNumberOfGuesses();
-		labelStyleDefault = "-fx-border-color: black;"
-				+ "-fx-border-width: "
-				+ Integer.toString(LETTER_BORDER_WIDTH)
-				+ "; -fx-border-style: solid;"
-				+ "-fx-border-color: white;"
-				+ "-fx-border-radius:" + Integer.toString(LETTER_BORDER_RADIUS)
-				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
-				+ "-fx-margin: 10px;";
+	private void setters(Stage stage)
+	{
+		root.setBackground(defaultBackground);
 		
-		keyboardStyleDefault = "-fx-border-color: black;"
-				+ "-fx-border-width: "
-				+ Integer.toString(KEYBOARD_BORDER_WIDTH)
-				+ "; -fx-border-style: solid;"
-				+ "-fx-border-color: grey;"
-				+ "-fx-border-radius:" + Integer.toString(KEYBOARD_BORDER_RADIUS)
-				+ ";-fx-margin:" + Integer.toString(GRID_GAP) + ";"
-				+ "-fx-margin: 30px;"
-				+ "-fx-font-weight: bolder;";
+		stage.setTitle("Wordle");
+		icon = new Image("icons8-w-96.png");
+		stage.getIcons().add(icon);
 		
-		root = new VBox();
-		scene = new Scene(root, SCENE_SIZE, SCENE_SIZE);
-		gridTop = new GridPane();
-		arrayOfLabels = new Label[attempt][len];
-		gridBottom = new GridPane();
-		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
+		
+		gridTop.setAlignment(Pos.CENTER);
+		gridTop.setHgap(GRID_GAP); 
+		gridTop.setVgap(GRID_GAP); 
+		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
+		root.setAlignment(Pos.CENTER);
+		root.getChildren().add(gridTop);
+		gridBottom.setAlignment(Pos.CENTER);
+		gridBottom.setHgap(KEY_GRID_GAP); 
+		gridBottom.setVgap(KEY_GRID_GAP); 
+		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
+		root.getChildren().add(gridBottom);
+		
 	}
 	
 	private String join(ArrayList<String> s) {

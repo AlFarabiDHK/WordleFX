@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import utilities.Guess;
 import utilities.INDEX_RESULT;
+import view.WordleGUIView;
 /**
  * 
  * This class is the model class for the Wordle program. It has methods to shape the
@@ -23,7 +24,10 @@ import utilities.INDEX_RESULT;
  * @author Muhtasim Al-Farabi, Tyler Conklin
  */
 
+
 public class WordleModel extends Observable{
+	
+	
 	
 	private static final String FILENAME = "dictionary.txt";
 	/**
@@ -66,11 +70,16 @@ public class WordleModel extends Observable{
 			this.answer = dictionary.get(randomNumber).toUpperCase();
 			this.answer = this.answer.toUpperCase();
 			this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
+			
 
 		}
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void setAnswer(String ans) {
+		this.answer = ans;
 	}
 	
 	/**
