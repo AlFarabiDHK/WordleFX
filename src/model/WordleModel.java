@@ -41,6 +41,9 @@ public class WordleModel extends Observable{
 	private static final int ALPHABETCOUNT = 26;
 	private Guess[] progress;
 	private String answer;
+	private int curr;
+	private boolean isGameOverBool;
+	
 	private INDEX_RESULT[] guessedCharacters;
 	private ArrayList<String> dictionary = new ArrayList<String>();
 
@@ -76,6 +79,31 @@ public class WordleModel extends Observable{
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+	}
+	/**
+	 * Determines the game's completion
+	 * <p>
+	 * This determines whether the game is over yet or not. We modify the field 
+	 * isGameOverBool in another method
+	 * @return returns the field called isGameOverBool
+	 */
+	
+	public boolean isGameOver() {
+		return this.isGameOverBool;
+		
+	}
+	
+	/**
+	 * Gets the number of attempts
+	 * 
+	 * <p>
+	 * THis method gets the number of attempts the player has 
+	 * tried already.
+	 * @return the private field curr
+	 */
+	
+	public int getCurr() {
+		return this.curr;
 	}
 	
 	public void setAnswer(String ans) {
@@ -139,6 +167,10 @@ public class WordleModel extends Observable{
 		
 		if(guess.equals(this.answer)) bool = true;
 		this.progress[guessNumber-1] = new Guess(guess, index, bool);
+		if(this.answer.equals(guess.toUpperCase()) || this.getCurr() == ALLOWEDNUMBEROFGUESSES) {
+			this.isGameOverBool = true;
+		}
+		this.curr++;
 		setChanged();
 		notifyObservers();
 	}

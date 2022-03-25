@@ -23,14 +23,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Border;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.WordleModel;
 import utilities.Guess;
@@ -46,7 +43,7 @@ public class WordleGUIView extends Application implements Observer{
 	private static final int KEY_GRID_GAP = 10;
 
 	/* Constants for letters in grid */
-	private static final int LETTER_FONT_SIZE = 75;
+	private static final int LETTER_FONT_SIZE = 65;
 	private static final int KEYBOARD_FONT_SIZE = 15;
 	private static final int LETTER_SQUARE_SIZE = 90;
 	private static final int KEYBOARD_SQUARE_SIZE = 40;
@@ -57,7 +54,7 @@ public class WordleGUIView extends Application implements Observer{
 	private static final int ALPHABET_COUNT = 26;
 	private WordleModel model;
 	private WordleController controller;
-	private String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
+	private static String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
 										"A", "S", "D", "F", "G", "H", "J","K","L",
 											"Z","X","C","V","B","N","M"};
 	private Character[] guessedChar;
@@ -90,7 +87,6 @@ public class WordleGUIView extends Application implements Observer{
 		this.populateArrays();
 		EventHandler<KeyEvent> keyboardInput = new KeyboardInputHandler();
 		scene.setOnKeyPressed(keyboardInput);
-		
 		stage.setScene(scene);
 		stage.show();
 	}
@@ -122,35 +118,39 @@ public class WordleGUIView extends Application implements Observer{
 					stack.clear();
 					j = 0;
 					i++;
+					if(controller.isGameOver()) {
+						String alertString = "Good game! The word was " + controller.getAnswer() + ".";
+						Alert alert = new Alert(AlertType.CONFIRMATION,alertString, ButtonType.OK);
+						alert.showAndWait();
+					}
 				}
 				catch (OnlyLettersException e) {
 					String alertString = e.toString();
-					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					Alert alert = new Alert(AlertType.WARNING,alertString, ButtonType.CLOSE);
 					alert.showAndWait();
 				}
 				catch(NotInDictionaryException e) {
 					String alertString = e.toString();
 					
-					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					Alert alert = new Alert(AlertType.WARNING,alertString, ButtonType.CLOSE);
 					alert.showAndWait();
 				}
 				catch(CorrectLengthException e) {
 					String alertString = e.toString();
-					Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
+					Alert alert = new Alert(AlertType.WARNING,alertString, ButtonType.CLOSE);
 					alert.showAndWait();
 					
 				}
 			}
 			
-			else {
-				if (j < WordleGUIView.len) {
+			else if (j < WordleGUIView.len) {
 					String tempLetter = ke.getCode().getName();
 					stack.add(tempLetter);
 					WordleGUIView.arrayOfLabels[i][j].setText(tempLetter);
 					j++;
 				}
-				
-			}
+			
+			
 		}
 		
 		
@@ -160,16 +160,9 @@ public class WordleGUIView extends Application implements Observer{
 		guessedChar = controller.allChar();
 		progress = model.getProgress();
 		guessedIndexResult = model.getGuessedCharacters();
-		ArrayList<Character> unguessed = new ArrayList<Character>();
-		ArrayList<Character> incorrect = new ArrayList<Character>();
-		ArrayList<Character> correct = new ArrayList<Character>();
-		ArrayList<Character> correctWrong = new ArrayList<Character>();
-		this.toStringProgress(progress, controller);
-		this.colorizeChar(guessedChar, guessedIndexResult,unguessed,
-				incorrect, correct, correctWrong);
-		//String alertString = "Good game! The word was " + controller.getAnswer() + ".";
-		//Alert alert = new Alert(AlertType.INFORMATION,alertString, ButtonType.CLOSE);
-		//alert.showAndWait();
+		this.colorMain(progress, controller);
+		this.colorizeChar(guessedChar, guessedIndexResult);
+
 		
 	}
 	
@@ -179,73 +172,46 @@ public class WordleGUIView extends Application implements Observer{
 				return i;
 			}
 		}
-		
 		return -1;
 	}
 	
-	public void colorizeChar(Character[] guessedChar, INDEX_RESULT[] guessedIndexResult, ArrayList<Character> unguessed,
-			ArrayList<Character> incorrect, ArrayList<Character> correct, ArrayList<Character> correctWrong) {
-		
+	public void colorizeChar(Character[] guessedChar, INDEX_RESULT[] guessedIndexResult) {
 		for(int i = 0; i < guessedIndexResult.length; i++) {
 			Character temp = guessedChar[i];
 			int index = search(temp);
 			if(guessedIndexResult[i] == null)
-				unguessed.add(guessedChar[i]);
+				continue;
 			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.CORRECT)==0) {
-				correct.add(guessedChar[i]);
-				
 				arrayOfKeyBoardLetters[index].setBackground(greenBackground);
 			}
 			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.CORRECT_WRONG_INDEX)==0) {
-				correctWrong.add(guessedChar[i]);
 				arrayOfKeyBoardLetters[index].setBackground(yellowBackground);
 			}
 			else if(guessedIndexResult[i].compareTo(INDEX_RESULT.INCORRECT)==0) {
-				incorrect.add(guessedChar[i]);
 				arrayOfKeyBoardLetters[index].setBackground(darkGreyBackground);
 			}
 			
 		}
-		
-		if(unguessed.size() != 0) {
-			System.out.println("Unguessed " + unguessed);
-		}
-		if(incorrect.size() != 0)
-			System.out.println(INDEX_RESULT.INCORRECT.getDescription() + " " + incorrect);
-		if(correct.size() != 0)
-			System.out.println(INDEX_RESULT.CORRECT.getDescription() + " " + correct);
-		if(correctWrong.size() != 0)
-			System.out.println(INDEX_RESULT.CORRECT_WRONG_INDEX.getDescription() + " " + correctWrong);
-		System.out.println();
 	}
 	
-	public void toStringProgress(Guess[] progress, WordleController controller) {
+	public void colorMain(Guess[] progress, WordleController controller) {
 		for(int i = 0; i < attempt; i++) {
 			if(progress[i] != null) 
 			{
 				INDEX_RESULT[] index = progress[i].getIndices();
-				String guess = progress[i].getGuess();
-				
 				for(int j = 0; j < len; j++) {
 					if(index[j].compareTo(INDEX_RESULT.CORRECT) == 0) {
-						String s = Character.toUpperCase(guess.charAt(j)) + " ";
-						System.out.print(s);
 						arrayOfLabels[i][j].setBackground(greenBackgroundBig);
 					}
 					else if (index[j].compareTo(INDEX_RESULT.CORRECT_WRONG_INDEX) == 0) {
-						String s = Character.toLowerCase(guess.charAt(j)) + " ";
-						System.out.print(s);
 						arrayOfLabels[i][j].setBackground(yellowBackgroundBig);
 					}
 					else { 
-						System.out.print("_ ");
 						arrayOfLabels[i][j].setBackground(afterEnterBackground);
 					}
 						
 				}
-				System.out.println();
 			}
-			else System.out.println("_ _ _ _ _");
 		}
 	}
 		
@@ -253,7 +219,7 @@ public class WordleGUIView extends Application implements Observer{
 	
 	private void fieldInitialization() {
 		model = new WordleModel();
-		model.setAnswer("MAYBE");
+		//model.setAnswer("MAYBE");
 		model.addObserver(this);
 		controller = new WordleController(model);
 		CornerRadii letterCorner = new CornerRadii(LETTER_BORDER_RADIUS);
@@ -350,12 +316,9 @@ public class WordleGUIView extends Application implements Observer{
 	private void setters(Stage stage)
 	{
 		root.setBackground(defaultBackground);
-		
 		stage.setTitle("Wordle");
 		icon = new Image("icons8-w-96.png");
 		stage.getIcons().add(icon);
-		
-		
 		gridTop.setAlignment(Pos.CENTER);
 		gridTop.setHgap(GRID_GAP); 
 		gridTop.setVgap(GRID_GAP); 

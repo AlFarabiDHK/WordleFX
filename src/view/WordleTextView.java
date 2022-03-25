@@ -1,6 +1,8 @@
 package view;
 
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Scanner;
 
 import controller.WordleController;
@@ -12,29 +14,30 @@ import utilities.Guess;
 import utilities.INDEX_RESULT;
 
 
-public class WordleTextView{
+public class WordleTextView implements Observer{
 	
 	WordleModel model;
 	WordleController controller;
-
+	Character[] guessedChar;
+	String guess;
 	public WordleTextView() {
 		model = new WordleModel();
 		controller = new WordleController(model);
+		model.addObserver(this);
 	}
 	
 	public void runText() throws OnlyLettersException, NotInDictionaryException, CorrectLengthException{
 		
 			// a model and a controller are defined at the start
 			
-			Character[] guessedChar = controller.allChar();				
+			guessedChar = controller.allChar();				
 			// main game loop
-			
-			while (!controller.isGameOver()) {
+			while(!controller.isGameOver()) {
 				Scanner sc = new Scanner(System.in);
 				System.out.print("Enter a guess: ");
-				String guess = sc.next().toUpperCase();
+				guess = sc.next().toUpperCase();
 				try {
-					controller.makeGuess(guess);
+					controller.makeGuess(guess);	
 				}
 				catch (OnlyLettersException e) {
 					System.out.println(e.toString());
@@ -44,27 +47,16 @@ public class WordleTextView{
 				}
 				catch(CorrectLengthException e) {
 					System.out.println(e.toString());
-					
 				}
-				Guess[] progress = model.getProgress();
-				// ArrayLists of relevant criteria
-				ArrayList<Character> unguessed = new ArrayList<Character>();
-				ArrayList<Character> incorrect = new ArrayList<Character>();
-				ArrayList<Character> correct = new ArrayList<Character>();
-				ArrayList<Character> correctWrong = new ArrayList<Character>();
-				toStringProgress(progress, controller);
-				System.out.println();
-				INDEX_RESULT[] guessedIndexResult = model.getGuessedCharacters();
-				
-				printChar(guessedChar, guessedIndexResult,unguessed,
-						incorrect, correct, correctWrong);
 			}
+			System.out.println("Good game! The word was " + getAnswer() + ".");
+			System.out.println("Would you like to play again? yes/no");
 			
-		
 	}
+			
 	
 	public String getAnswer() {
-		return model.getAnswer();
+		return controller.getAnswer();
 	}
 	
 	/**
@@ -146,6 +138,24 @@ public class WordleTextView{
 			}
 			else System.out.println("_ _ _ _ _");
 		}
+	}
+
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
+		Guess[] progress = model.getProgress();
+		
+		// ArrayLists of relevant criteria
+		ArrayList<Character> unguessed = new ArrayList<Character>();
+		ArrayList<Character> incorrect = new ArrayList<Character>();
+		ArrayList<Character> correct = new ArrayList<Character>();
+		ArrayList<Character> correctWrong = new ArrayList<Character>();
+		toStringProgress(progress, controller);
+		System.out.println();
+		INDEX_RESULT[] guessedIndexResult = model.getGuessedCharacters();
+		printChar(guessedChar, guessedIndexResult,unguessed,
+				incorrect, correct, correctWrong);
+			
 	}
 
 	
