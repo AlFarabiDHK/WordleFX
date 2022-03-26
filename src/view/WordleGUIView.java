@@ -9,6 +9,8 @@ import controller.WordleController;
 import controller.WordleController.CorrectLengthException;
 import controller.WordleController.NotInDictionaryException;
 import controller.WordleController.OnlyLettersException;
+import javafx.animation.SequentialTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -29,6 +31,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import model.WordleModel;
 import utilities.Guess;
 import utilities.INDEX_RESULT;
@@ -93,10 +96,24 @@ public class WordleGUIView extends Application implements Observer{
 
 	private class KeyboardInputHandler implements EventHandler<KeyEvent>{
 		
-		ArrayList<String> stack = new ArrayList<String>();
-		String guess;
-		int i = 0;
-		int j = 0;
+		private ArrayList<String> stack = new ArrayList<String>();
+		private String guess;
+		private int i = 0;
+		private int j = 0;
+		
+		private void animation() {
+			TranslateTransition transitionList[] = new TranslateTransition[WordleGUIView.len];
+			for(int k = 0; k < WordleGUIView.len; k++) {
+				transitionList[k] = new TranslateTransition(Duration.millis(250));
+				transitionList[k].setNode(WordleGUIView.arrayOfLabels[i][k]);
+				transitionList[k].setByY(-30);
+				transitionList[k].setCycleCount(2);
+				transitionList[k].setAutoReverse(true);
+			}
+			
+			SequentialTransition seqT = new SequentialTransition(transitionList);
+		     seqT.play();
+		}
 		
 		@Override
 		public void handle(KeyEvent ke) {
@@ -119,6 +136,8 @@ public class WordleGUIView extends Application implements Observer{
 					j = 0;
 					i++;
 					if(controller.isGameOver()) {
+						--i;
+						this.animation();
 						String alertString = "Good game! The word was " + controller.getAnswer() + ".";
 						Alert alert = new Alert(AlertType.CONFIRMATION,alertString, ButtonType.OK);
 						alert.showAndWait();
@@ -131,7 +150,6 @@ public class WordleGUIView extends Application implements Observer{
 				}
 				catch(NotInDictionaryException e) {
 					String alertString = e.toString();
-					
 					Alert alert = new Alert(AlertType.WARNING,alertString, ButtonType.CLOSE);
 					alert.showAndWait();
 				}
@@ -219,7 +237,6 @@ public class WordleGUIView extends Application implements Observer{
 	
 	private void fieldInitialization() {
 		model = new WordleModel();
-		//model.setAnswer("MAYBE");
 		model.addObserver(this);
 		controller = new WordleController(model);
 		CornerRadii letterCorner = new CornerRadii(LETTER_BORDER_RADIUS);

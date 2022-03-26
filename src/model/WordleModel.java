@@ -106,10 +106,6 @@ public class WordleModel extends Observable{
 		return this.curr;
 	}
 	
-	public void setAnswer(String ans) {
-		this.answer = ans;
-	}
-	
 	/**
 	 * Gets the dictionary in an ArrayList
 	 * <p>
