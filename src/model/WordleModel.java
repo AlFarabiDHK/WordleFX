@@ -1,3 +1,4 @@
+
 package model;
 
 import java.util.ArrayList;
@@ -53,7 +54,8 @@ public class WordleModel extends Observable{
 	 * This is the constructor for the WordleModel class. It sets all the elements
 	 * of the guessedCharacters array to null. Then it opens up the file, adds the words into an ArrayList,
 	 * then generates a random number between 0 and that number.
-	 * Then, it selects the word at that random index and assigns as the answer.
+	 * Then, it selects the word at that random index and assigns as the answer. It also
+	 * assigns the progress field as an array of Guess. 
 	 */
 	
 	public WordleModel() { 
@@ -124,10 +126,9 @@ public class WordleModel extends Observable{
 	 * goes through the guessed and compares it with the answer. It instantiates an array of INDEX_RESULT
 	 * that will contain information about the status of each letter in the guess. The program loops through
 	 * and compares the guessed, and sets the enum values of the array according to the status of the letters
-	 * in the guess. 
+	 * in the guess. In the end, the method notifies its observers to act according to the changes.
 	 * @param guess a String, guess word from the user
 	 * @param guessNumber a number that represents the number of attempts attempted
-	 * @return returns a Guess object that has been modified to match the current guess
 	 */
 	
 	public void makeGuess(int guessNumber, String guess) {
@@ -188,7 +189,8 @@ public class WordleModel extends Observable{
 	/**
 	 * Gets guessed characters
 	 * <p>
-	 * This method gets the guessed characters from the 
+	 * This method gets the guessed characters from the guessedCharacters
+	 * field
 	 * @return an array of INDEX_RESULT that contains the guessedCharacters
 	 */
 	

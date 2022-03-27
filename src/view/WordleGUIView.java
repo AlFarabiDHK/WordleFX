@@ -36,6 +36,12 @@ import model.WordleModel;
 import utilities.Guess;
 import utilities.INDEX_RESULT;
 
+/**
+ * This class runs a Wordle game using a GUI made using JavaFX. 
+ * @author Muhtasim Al-Farabi
+ *
+ */
+
 public class WordleGUIView extends Application implements Observer{
 
 	/* Constants for the scene */
@@ -55,33 +61,53 @@ public class WordleGUIView extends Application implements Observer{
 	private static final int LETTER_BORDER_RADIUS = 4;
 	private static final int KEYBOARD_BORDER_RADIUS = 2;
 	private static final int ALPHABET_COUNT = 26;
+	
+	/* Fields related to the execution of Wordle */
 	private WordleModel model;
 	private WordleController controller;
 	private static String[] keyboard = {"Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
 										"A", "S", "D", "F", "G", "H", "J","K","L",
 											"Z","X","C","V","B","N","M"};
-	private Character[] guessedChar;
-	private Guess[] progress;
-	private INDEX_RESULT[] guessedIndexResult;
-	private VBox root;
-	private Scene scene;
-	private Image icon;
-	private Background defaultBackground;
-	private Background keyboardBackground;
-	private Background greenBackground;
-	private Background yellowBackground;
-	private Background greenBackgroundBig;
-	private Background yellowBackgroundBig;
-	private Background darkGreyBackground;
-	private Background afterEnterBackground;
-	private static Label[][] arrayOfLabels;
-	private static Label[] arrayOfKeyBoardLetters;
-	private GridPane gridTop;
-	private GridPane gridBottom;
 	private static int len;
 	private static int attempt;
 	private static String labelStyleDefault;
 	private static String keyboardStyleDefault;
+	private Character[] guessedChar;
+	private Guess[] progress;
+	private INDEX_RESULT[] guessedIndexResult;
+	
+	
+	/* Different kinds of Background objects */
+	private static Background defaultBackground;
+	private static Background keyboardBackground;
+	private static Background greenBackground;
+	private static Background yellowBackground;
+	private static Background greenBackgroundBig;
+	private static Background yellowBackgroundBig;
+	private static Background darkGreyBackground;
+	private static Background afterEnterBackground;
+	
+	/* Arrays to hold labels */
+	private static Label[][] arrayOfLabels;
+	private static Label[] arrayOfKeyBoardLetters;
+	
+	/* Graphics objects */
+	private static GridPane gridTop;
+	private static GridPane gridBottom;
+	private static VBox root;
+	private static Scene scene;
+	private static Image icon;
+
+	/**
+	 * Start method for the JavaFX scene
+	 * 
+	 * <p>
+	 * 
+	 * This method initializes all the field, sets all Node properties,
+	 * and populates the arrays. The goal of this method is to initialize everything.
+	 * It also uses the private keyEvent class to handle key presses from the user.
+	 * @param stage a stage upon which each object will be placed
+	 */
 	
 	@Override
 	public void start(Stage stage) {
@@ -93,6 +119,17 @@ public class WordleGUIView extends Application implements Observer{
 		stage.setScene(scene);
 		stage.show();
 	}
+	
+	/**
+	 * This is a private class that handles keyboard input from the user. It handles
+	 * the end animation and has a method called handle that gets called automatically.
+	 * The purpose of this class is to be passed through the setOnKeyPressed method in
+	 * the start method of the outer class and handle all the key press events
+	 * through it. 
+	 * 
+	 * @author Muhtasim Al-Farabi
+	 *
+	 */
 
 	private class KeyboardInputHandler implements EventHandler<KeyEvent>{
 		
@@ -101,13 +138,27 @@ public class WordleGUIView extends Application implements Observer{
 		private int i = 0;
 		private int j = 0;
 		
+		/**
+		 * Animates the win 
+		 * 
+		 * <p>
+		 * 
+		 * This private method executes the end animation. It makes all the
+		 * labels of the final/winning attempt jump up and down by 30 pixels
+		 * for 250 milliseconds sequentially. 
+		 * 
+		 */
+		
 		private void animation() {
+			int yJump = -30;
+			int cycles = 2;
+			int duration = 250;
 			TranslateTransition transitionList[] = new TranslateTransition[WordleGUIView.len];
 			for(int k = 0; k < WordleGUIView.len; k++) {
-				transitionList[k] = new TranslateTransition(Duration.millis(250));
+				transitionList[k] = new TranslateTransition(Duration.millis(duration));
 				transitionList[k].setNode(WordleGUIView.arrayOfLabels[i][k]);
-				transitionList[k].setByY(-30);
-				transitionList[k].setCycleCount(2);
+				transitionList[k].setByY(yJump);
+				transitionList[k].setCycleCount(cycles);
 				transitionList[k].setAutoReverse(true);
 			}
 			
@@ -115,6 +166,22 @@ public class WordleGUIView extends Application implements Observer{
 		     seqT.play();
 		}
 		
+
+		/**
+		 * Handles the KeyEvents
+		 * 
+		 * <p> 
+		 * 
+		 * This method takes key inputs from the user and runs different functions
+		 * accordingly. If the user presses a letter, it displays the letter on the 
+		 * Screen. If the user pressed delete, it deletes a letter from
+		 * the key if the stack is not empty. When ENTER is pressed, it executes the
+		 * makeGuess method and checks if the game is over or not. If the game is over
+		 * and the user won, it calls the animation method. Then it alerts the user
+		 * about the correct answer. This class throws exceptions as alerts.
+		 * @param ke KeyEvent object that detects input
+		 * 
+		 */
 		@Override
 		public void handle(KeyEvent ke) {
 			
@@ -137,7 +204,8 @@ public class WordleGUIView extends Application implements Observer{
 					i++;
 					if(controller.isGameOver()) {
 						--i;
-						this.animation();
+						if(controller.didWin())
+							this.animation();
 						String alertString = "Good game! The word was " + controller.getAnswer() + ".";
 						Alert alert = new Alert(AlertType.CONFIRMATION,alertString, ButtonType.OK);
 						alert.showAndWait();
@@ -173,6 +241,24 @@ public class WordleGUIView extends Application implements Observer{
 		
 		
 	}
+	
+	/**
+	 * This method is called whenever the observed object is changed.
+	 * 
+	 * <p>
+	 * This method is called whenever the observed object is changed. 
+	 * An application calls an Observable object's notifyObservers method 
+	 * to have all the object's observers notified of the change. Here,
+	 * it runs the colorMain method and the colorizeChar method
+	 * to display the appropriate changes. It also can access the
+	 * getProgress method and the getGuessedCharacter method directly 
+	 * from the model instead of the controller.
+	 * 
+	 * @param o the observable object
+	 * @param arg an argument passed to the notifyObservers method
+	 * 
+	 */
+	
 	@Override
 	public void update(Observable o, Object arg) {
 		guessedChar = controller.allChar();
@@ -180,9 +266,23 @@ public class WordleGUIView extends Application implements Observer{
 		guessedIndexResult = model.getGuessedCharacters();
 		this.colorMain(progress, controller);
 		this.colorizeChar(guessedChar, guessedIndexResult);
-
-		
 	}
+	
+	/**
+	 * Called to perform search on the keyboard array field
+	 * 
+	 * <p>
+	 * 
+	 * This is a private method that finds a target's index
+	 * in the keyboard array field. We need a search method
+	 * because the keyboard letters are not in alphabetical
+	 * order
+	 * @param target the target letter to be found in the keyboard array
+	 * @return the index of the letter in the keyboard array
+	 * 
+	 * 
+	 * 
+	 */
 	
 	private int search(Character target) {
 		for(int i = 0; i < keyboard.length; i++) {
@@ -193,7 +293,21 @@ public class WordleGUIView extends Application implements Observer{
 		return -1;
 	}
 	
-	public void colorizeChar(Character[] guessedChar, INDEX_RESULT[] guessedIndexResult) {
+	/**
+	 * Recolors the keyboard characters
+	 * 
+	 * <p>
+	 * 
+	 * This method colors/recolors the keyboard characters. It works similarly
+	 * as colorMain and changes the color of a keyboard character after
+	 * each guess according to the rules of Wordle. 
+	 * 
+	 * @param guessedChar a Character array with all the guessed characters
+	 * @param guessedIndexResult an array of INDEX_RESULT that contain the state
+	 * of each letter of the given word
+	 */
+	
+	private void colorizeChar(Character[] guessedChar, INDEX_RESULT[] guessedIndexResult) {
 		for(int i = 0; i < guessedIndexResult.length; i++) {
 			Character temp = guessedChar[i];
 			int index = search(temp);
@@ -212,7 +326,20 @@ public class WordleGUIView extends Application implements Observer{
 		}
 	}
 	
-	public void colorMain(Guess[] progress, WordleController controller) {
+	
+	/**
+	 * This method changes the color of the incorrectly guessed, partially
+	 * correct guessed, and correct guessed Labels in the GUI. It does that
+	 * by changing the background of those labels to their appropriate colors
+	 * It takes in an array  of guessed characters and an array of INDEX_RESULT
+	 * (this tells us about the state of the character). 
+	 * 
+	 * @param progress an array of Guess elements that contains the current progress
+	 * of the game
+	 * @param controller an instance of the controller class
+	 */
+	
+	private void colorMain(Guess[] progress, WordleController controller) {
 		for(int i = 0; i < attempt; i++) {
 			if(progress[i] != null) 
 			{
@@ -233,6 +360,14 @@ public class WordleGUIView extends Application implements Observer{
 		}
 	}
 		
+	/**
+	 * Initializes all the fields
+	 * 
+	 * <p>
+	 * 
+	 * This private method has been created to reduce clutter in the start method. Its goal
+	 * is to initialize all private fields in one place
+	 */
 	
 	
 	private void fieldInitialization() {
@@ -287,6 +422,43 @@ public class WordleGUIView extends Application implements Observer{
 		arrayOfKeyBoardLetters = new Label[ALPHABET_COUNT];
 	}
 	
+	/**
+	 * Set Nodes to their properties
+	 * 
+	 * <p>
+	 * 
+	 * This private method has been created to reduce clutter in the start method. Its goal
+	 * is to contain all the setter method calls by all the nodes. 
+	 */
+	
+	private void setters(Stage stage)
+	{
+		root.setBackground(defaultBackground);
+		stage.setTitle("Wordle");
+		icon = new Image("icons8-w-96.png");
+		stage.getIcons().add(icon);
+		gridTop.setAlignment(Pos.CENTER);
+		gridTop.setHgap(GRID_GAP); 
+		gridTop.setVgap(GRID_GAP); 
+		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
+		root.setAlignment(Pos.CENTER);
+		root.getChildren().add(gridTop);
+		gridBottom.setAlignment(Pos.CENTER);
+		gridBottom.setHgap(KEY_GRID_GAP); 
+		gridBottom.setVgap(KEY_GRID_GAP); 
+		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
+		root.getChildren().add(gridBottom);
+		
+	}
+	/**
+	 * Populates arrayOfLabels and arrayOfKeyBoardLetters
+	 * 
+	 * <p>
+	 * 
+	 * This private method has been created to reduce clutter in the start method. Its goal
+	 * is to add new labels to these fields and set their properties using loops.
+	 * 
+	 */
 	private void populateArrays() {
 
 		for(int i = 0; i < attempt; i++) {
@@ -329,27 +501,16 @@ public class WordleGUIView extends Application implements Observer{
 		}
 		
 	}
-	
-	private void setters(Stage stage)
-	{
-		root.setBackground(defaultBackground);
-		stage.setTitle("Wordle");
-		icon = new Image("icons8-w-96.png");
-		stage.getIcons().add(icon);
-		gridTop.setAlignment(Pos.CENTER);
-		gridTop.setHgap(GRID_GAP); 
-		gridTop.setVgap(GRID_GAP); 
-		gridTop.setPadding(new Insets(GRID_GAP,GRID_GAP, GRID_GAP, GRID_GAP));
-		root.setAlignment(Pos.CENTER);
-		root.getChildren().add(gridTop);
-		gridBottom.setAlignment(Pos.CENTER);
-		gridBottom.setHgap(KEY_GRID_GAP); 
-		gridBottom.setVgap(KEY_GRID_GAP); 
-		gridBottom.setPadding(new Insets(KEY_GRID_GAP,KEY_GRID_GAP, KEY_GRID_GAP, KEY_GRID_GAP));
-		root.getChildren().add(gridBottom);
-		
-	}
-	
+	/**
+	 * Joins all the letters 
+	 * 
+	 * <p>
+	 * 
+	 * This private method is used to join all the letters to a String
+	 * from the stack
+	 * @param s an ArrayList of Strings acting as a stack
+	 * @return a String comprised of all the letters in the ArrayList
+	 */
 	private String join(ArrayList<String> s) {
 		String result = "";
 		for (String elem:s) {

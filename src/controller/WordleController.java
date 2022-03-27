@@ -33,6 +33,7 @@ public class WordleController {
 	private int curr;
 	private boolean isGameOverBool;
 	private String answer;
+	private boolean win;
 	
 	/**
 	 * Constructor
@@ -46,6 +47,7 @@ public class WordleController {
 		this.model = model;
 		this.isGameOverBool = false;
 		this.curr = 1;
+		this.win = false;
 		this.answer = model.getAnswer();
 		this.progress = new Guess[this.ALLOWEDNUMBEROFGUESSES];
 		for(int i = 0; i < this.ALLOWEDNUMBEROFGUESSES; i++) {
@@ -89,9 +91,31 @@ public class WordleController {
 		return this.curr;
 	}
 	
+	/**
+	 * Gets the allowed number of guess
+	 * 
+	 * <p>
+	 * 
+	 * This method gets the allowed number of guessed by 
+	 * returning the field ALLOWEDNUMBEROFGUESSES
+	 * 
+	 * @return returns the field ALLOWEDNUMBEROFGUESSES
+	 */
+	
 	public int getAllowedNumberOfGuesses() {
 		return ALLOWEDNUMBEROFGUESSES;
 	}
+	
+	/**
+	 * Gets the allowed length of the guesses
+	 * 
+	 * <p>
+	 * 
+	 * This method gets the allowed length of guessed by 
+	 * returning the field LEN
+	 * 
+	 * @return returns the field LEN
+	 */
 	
 	public int getLen() {
 		return LEN;
@@ -109,13 +133,26 @@ public class WordleController {
 		return this.isGameOverBool;
 	}
 	
+	/**
+	 * Determine's if the user won or not
+	 * 
+	 * <p>
+	 * 
+	 * This method returns the win field which indicates
+	 * if a user won or lost
+	 * @return whether a user won or not
+	 */
+	
+	public boolean didWin() {
+		return this.win;
+	}
+	
 	
 	/**
 	 * Takes a guess and stores into the progress
 	 * <p>
 	 * This method calls the makeGuess method from the model and returns the output of the method
 	 * @param guess an instance of Guess, contains information about the current guess
-	 * @return returns a guess using the given parameter
 	 * @throws OnlyLettersException if guess contains non-alphabet letter
 	 * @throws NotInDictionaryException if guess is not in the Dictionary.txt file
 	 * @throws CorrectLengthException if guess is not equal to the allowed Length
@@ -131,9 +168,23 @@ public class WordleController {
 		model.makeGuess(this.curr, guess);
 		if(this.answer.equals(guess.toUpperCase()) || this.getCurr() == ALLOWEDNUMBEROFGUESSES) {
 			this.isGameOverBool = true;
+			if(this.answer.equals(guess.toUpperCase())) this.win = true;
 		}
 		this.curr++;
 	}
+	
+	/**
+	 * 
+	 * 
+	 * 
+	 * 
+	 * This class is used in the view to catch exceptions where the
+	 * letters of the guess contains characters other than
+	 * alphabets.
+	 * 
+	 *  @author Muhtasim Al-Farabi
+	 *
+	 */
 	
 	public class OnlyLettersException extends Exception {
 		/**
@@ -160,10 +211,12 @@ public class WordleController {
 		
 	/**
 	 * 
-	 * @author Muhtasim Al-Farabi
+	 * 
 	 * 
 	 * This class is used in the view to catch exceptions where the
-	 * guess does not belong to any of the words in dictionary.txt 
+	 * guess does not belong to any of the words in dictionary.txt.
+	 * 
+	 * @author Muhtasim Al-Farabi
 	 *
 	 */
 	
@@ -192,10 +245,12 @@ public class WordleController {
 	
 	/**
 	 * 
-	 * @author Muhtasim Al-Farabi
+	 *
 	 * 
 	 * This class is used in the view to catch exceptions where the
-	 * guess does not follow the length constrain of our game
+	 * guess does not follow the length constrain of our game.
+	 * 
+	 * @author Muhtasim Al-Farabi
 	 *
 	 */
 	
